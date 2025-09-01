@@ -1,25 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>URL Shortener</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL Shortener</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
+      animation: fadeIn 1.5s ease-in;
+    }
+
+    .container {
+      background-color: rgba(30, 30, 47, 0.9);
+      padding: 40px 50px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      animation: slideIn 1s ease-out;
+      backdrop-filter: blur(6px);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff88;
+    }
+
+    label {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      display: block;
+      color: #cccccc;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background-color: #2b2b3d;
+      color: #ffffff;
+      font-size: 1rem;
+      box-shadow: inset 0 0 5px #00ffff33;
+      margin-top: 10px;
+      transition: 0.3s;
+    }
+
+    input[type="text"]:focus {
+      box-shadow: 0 0 10px #00ffffaa;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0072ff88;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #0072ff, #00c6ff);
+      box-shadow: 0 0 25px #00c6ffcc;
+    }
+
+    a {
+      color: #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    a:hover {
+      text-shadow: 0 0 8px #00ffff;
+    }
+
+    p {
+      margin-top: 20px;
+      font-size: 1.1rem;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>URL Shortener</h1>
-        <form action="/" method="POST">
-            <label for="LongURL">Enter URL</label>
-            <input type="text" id="LongUrl" name="LongUrl" required>
-            <button type="submit">Shorten</button>
-        </form>
+  <div class="container">
+    <h1>URL Shortener</h1>
+    <form action="/short" method="POST">
+      <label for="LongURL">Enter URL</label>
+      <input type="text" id="LongUrl" name="LongUrl" required>
+      <button type="submit">Shorten</button>
+    </form>
 
-        <% if (shortUrl) { %>
-            <p>
-                Short URL: 
-                <a href="<%= shortUrl %>" target="_blank"><%= shortUrl %></a>
-            </p>
-        <% } %>
-    </div>
+    <% if (shortUrl) { %>
+      <p>
+        Short URL: 
+        <a href="<%= shortUrl %>" target="_blank"><%= shortUrl %></a>
+      </p>
+    <% } %>
+  </div>
 </body>
 </html>
