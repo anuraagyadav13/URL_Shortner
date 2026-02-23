@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,7 +38,7 @@
       color: var(--primary);
       line-height: 1.6;
       position: relative;
-      background-image: 
+      background-image:
         linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
         radial-gradient(circle at 10% 20%, rgba(52, 152, 219, 0.1), transparent 20%),
         radial-gradient(circle at 90% 80%, rgba(231, 76, 60, 0.1), transparent 25%),
@@ -192,7 +193,7 @@
     }
 
     .result-container.show {
-      max-height: 200px;
+      max-height: 400px;
       opacity: 1;
       padding: 1.5rem;
     }
@@ -224,10 +225,11 @@
       font-size: 1.1rem;
       font-weight: 500;
       color: var(--primary);
-      word-break: break-all;
+      word-break: break-word;
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 12px;
+      line-height: 1.5;
     }
 
     .result-url a {
@@ -235,13 +237,11 @@
       text-decoration: none;
       transition: all 0.2s ease;
       flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      display: block;
     }
 
     .result-url a:hover {
       color: var(--accent);
-      text-decoration: underline;
     }
 
     .copy-btn {
@@ -316,15 +316,15 @@
       .container {
         padding: 2rem 1.5rem;
       }
-      
+
       h1 {
         font-size: 1.8rem;
       }
-      
+
       .features {
         grid-template-columns: 1fr;
       }
-      
+
       .btn {
         padding: 14px 20px;
       }
@@ -332,8 +332,15 @@
 
     /* Animation */
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .fade-in {
@@ -373,13 +380,8 @@
       <div class="form-group">
         <div class="input-group">
           <i class="fas fa-link input-icon"></i>
-          <input 
-            type="text" 
-            id="LongUrl" 
-            name="LongUrl" 
-            placeholder="Enter circuit data URL or paste JSON data" 
-            required
-          >
+          <input type="text" id="LongUrl" name="LongUrl" placeholder="Enter circuit data URL or paste JSON data"
+            required>
         </div>
       </div>
       <button type="submit" class="btn">
@@ -394,7 +396,9 @@
           Analysis Complete
         </div>
         <div class="result-url">
-          <a id="resultLink" href="<%= shortUrl || '#' %>" target="_blank"><%= shortUrl || 'No results yet' %></a>
+          <a id="resultLink" href="<%= shortUrl || '#' %>" target="_blank">
+            <%= shortUrl || 'No results yet' %>
+          </a>
           <button id="copyBtn" class="copy-btn" title="Copy to clipboard">
             <i class="far fa-copy"></i>
           </button>
@@ -408,31 +412,30 @@
   </div>
 
   <script>
-    // Show result container if there's a short URL
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function () {
       const resultContainer = document.getElementById('resultContainer');
       const resultLink = document.getElementById('resultLink');
       const copyBtn = document.getElementById('copyBtn');
-      
-      // Show results if URL exists
-      if (resultLink.textContent && resultLink.textContent !== 'No results yet') {
-        resultContainer.classList.add('show');
-        resultContainer.classList.add('fade-in');
+      const form = document.getElementById('analysisForm');
+
+      // 6. Temporary GET request to /status
+      try {
+        console.log("Checking backend status at http://localhost:5000/status...");
+        const statusRes = await fetch("http://localhost:5000/status");
+        const statusData = await statusRes.json();
+        console.log("Backend Status Response:", statusData);
+      } catch (err) {
+        console.error("Backend Error (Status Check):", err);
       }
 
-      // Copy to clipboard functionality
       if (copyBtn) {
-        copyBtn.addEventListener('click', function() {
-          const textToCopy = resultLink.href;
+        copyBtn.addEventListener('click', function () {
+          const textToCopy = resultLink.textContent;
           navigator.clipboard.writeText(textToCopy).then(() => {
             const icon = copyBtn.querySelector('i');
             const originalIcon = icon.className;
-            
-            // Change icon to checkmark
             icon.className = 'fas fa-check';
             copyBtn.title = 'Copied!';
-            
-            // Revert back after 2 seconds
             setTimeout(() => {
               icon.className = originalIcon;
               copyBtn.title = 'Copy to clipboard';
@@ -443,18 +446,69 @@
         });
       }
 
-      // Form submission animation
-      const form = document.getElementById('analysisForm');
       if (form) {
-        form.addEventListener('submit', function() {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault(); // Prevent traditional form submission to /short
+
           const submitBtn = this.querySelector('button[type="submit"]');
+          const originalBtnHTML = submitBtn.innerHTML;
+          const imageUrlInput = document.getElementById('LongUrl').value;
+
           if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+          }
+
+          try {
+            console.log("Triggering request from frontend..."); // 3. Temporary console log before API call
+
+            // 1 & 2. Making the POST request to the correct Flask endpoint with JSON body
+            const response = await fetch("http://localhost:5000/detectFault", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                image_url: imageUrlInput
+              })
+            });
+
+            console.log("Response received from backend."); // 3. Temporary console log after API call
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.error || 'Server error occurred');
+            }
+
+            // Display results
+            resultContainer.classList.add('show');
+            resultContainer.classList.add('fade-in');
+
+            // Format output for UI
+            let resultHtml = `Status: ${data.fault_status} | Type: ${data.fault_type || 'None'} | Prob: ${data.probability} | Loss: ${data.reconstruction_loss}`;
+
+            // Render the RL optimizations dynamically if returned
+            if (data.layout_optimization) {
+              resultHtml += `<br><br><span style="color:var(--success)"><b>Optimization Needed [Urgency: ${data.optimization_score}]:</b><br>${data.layout_optimization}</span>`;
+            }
+
+            resultLink.innerHTML = resultHtml;
+            resultLink.href = "#";
+
+          } catch (error) {
+            console.error("Backend Error:", error); // 5. Log error handling
+            alert("Analysis failed. Please check the console for more details.");
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnHTML;
+            }
           }
         });
       }
     });
   </script>
 </body>
+
 </html>

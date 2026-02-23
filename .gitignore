@@ -1,2 +1,8 @@
 node_modules/
 .env
+venv/
+Models/
+__pycache__/
+*.h5
+node_modules/
+.env
